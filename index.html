@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Masters — Grade 5 Practice Arena</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a1040 50%, #0a0a1a 100%); min-height: 100vh; color: #fff; }
+  button { font-family: inherit; }
+  input::placeholder { color: #4a5568; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.35s ease-out; }
+  .slide-up { animation: slideUp 0.4s ease-out; }
+
+  .wrap { max-width: 620px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Home */
+  .home-icon { font-size: 48px; margin-bottom: 8px; }
+  .home-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .home-sub { color: #a0aec0; font-size: 16px; margin-top: 8px; }
+  .home-rule { width: 60px; height: 3px; background: linear-gradient(90deg, #E8590C, #D69E2E); margin: 16px auto; border-radius: 2px; }
+
+  .cat-btn {
+    display: flex; align-items: center; gap: 16px; padding: 16px 20px; width: 100%;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; cursor: pointer; text-align: left; transition: all 0.2s; margin-bottom: 10px;
+  }
+  .cat-btn:hover { background: rgba(255,255,255,0.08); }
+  .cat-icon { font-size: 28px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; flex-shrink: 0; }
+  .cat-name { color: #fff; font-weight: 700; font-size: 16px; }
+  .cat-desc { color: #718096; font-size: 13px; margin-top: 2px; }
+  .cat-count { font-weight: 700; font-size: 14px; flex-shrink: 0; }
+
+  .random-btn {
+    width: 100%; margin-top: 20px; padding: 16px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #E8590C, #D69E2E); color: #fff; font-weight: 700;
+    font-size: 16px; cursor: pointer; box-shadow: 0 4px 20px rgba(232,89,12,0.3); transition: transform 0.15s;
+  }
+  .random-btn:hover { transform: translateY(-1px); }
+
+  /* Quiz */
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .exit-btn { background: none; border: none; color: #718096; font-size: 14px; cursor: pointer; }
+  .exit-btn:hover { color: #a0aec0; }
+  .progress-label { color: #a0aec0; font-size: 14px; font-weight: 600; }
+  .score-badge { background: rgba(72,187,120,0.15); color: #48bb78; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 14px; }
+
+  .progress-bar { display: flex; gap: 3px; margin-bottom: 12px; }
+  .progress-dot { flex: 1; height: 4px; border-radius: 2px; transition: background 0.3s; }
+
+  .timer-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .timer-track { flex: 1; height: 8px; background: #1a1a2e; border-radius: 4px; overflow: hidden; }
+  .timer-fill { height: 100%; border-radius: 4px; transition: width 1s linear; }
+  .timer-num { font-weight: 800; font-size: 20px; min-width: 36px; text-align: right; }
+
+  .q-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 28px 24px; margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .q-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0; }
+  .q-label { color: #718096; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .q-text { color: #f7fafc; font-weight: 600; line-height: 1.5; }
+
+  /* Choices */
+  .choice-btn {
+    display: flex; align-items: center; gap: 14px; padding: 14px 18px; width: 100%;
+    background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px; cursor: pointer; text-align: left; transition: all 0.2s; margin-bottom: 10px;
+  }
+  .choice-btn:not(.answered):hover { border-color: var(--cat-color); }
+  .choice-btn.correct-opt { background: rgba(72,187,120,0.15); border-color: #48bb78; }
+  .choice-btn.wrong-sel { background: rgba(252,129,129,0.15); border-color: #fc8181; }
+  .choice-letter {
+    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;
+  }
+  .choice-text { color: #e2e8f0; font-size: 16px; font-weight: 500; }
+  .choice-mark { margin-left: auto; font-size: 20px; }
+
+  /* Input */
+  .input-row { display: flex; gap: 10px; }
+  .ans-input {
+    flex: 1; padding: 14px 18px; background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.12); border-radius: 12px; color: #fff;
+    font-weight: 600; outline: none; font-family: inherit;
+  }
+  .ans-input:focus { border-color: rgba(255,255,255,0.3); }
+  .ans-input.right { border-color: #48bb78; }
+  .ans-input.wrong { border-color: #fc8181; }
+  .go-btn {
+    padding: 14px 24px; border: none; border-radius: 12px; color: #fff;
+    font-weight: 700; font-size: 16px; cursor: pointer; transition: opacity 0.2s;
+  }
+  .go-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .feedback {
+    margin-top: 12px; padding: 12px 16px; border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .feedback.ok { background: rgba(72,187,120,0.12); border: 1px solid rgba(72,187,120,0.3); }
+  .feedback.bad { background: rgba(252,129,129,0.12); border: 1px solid rgba(252,129,129,0.3); }
+  .fb-emoji { font-size: 24px; }
+  .fb-title { font-weight: 700; font-size: 15px; }
+  .fb-ans { color: #a0aec0; font-size: 14px; margin-top: 2px; }
+
+  .next-btn {
+    width: 100%; margin-top: 20px; padding: 16px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+    color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; transition: background 0.2s;
+  }
+  .next-btn:hover { background: rgba(255,255,255,0.1); }
+
+  /* Results */
+  .res-emoji { font-size: 64px; margin-bottom: 8px; }
+  .res-title { font-size: 28px; font-weight: 800; }
+  .res-stats { display: flex; justify-content: center; gap: 24px; margin-top: 16px; margin-bottom: 24px; }
+  .stat-num { font-size: 36px; font-weight: 800; }
+  .stat-lbl { color: #718096; font-size: 13px; }
+
+  .rev-item { padding: 12px 16px; margin-bottom: 8px; border-radius: 10px; }
+  .rev-item.ok { background: rgba(72,187,120,0.1); border: 1px solid rgba(72,187,120,0.2); }
+  .rev-item.bad { background: rgba(252,129,129,0.1); border: 1px solid rgba(252,129,129,0.2); }
+  .rev-q { color: #e2e8f0; font-size: 14px; margin-bottom: 4px; }
+  .rev-row { display: flex; gap: 16px; font-size: 13px; flex-wrap: wrap; }
+
+  .res-btns { display: flex; gap: 12px; margin-top: 20px; }
+  .res-btn { flex: 1; padding: 14px; border: none; border-radius: 10px; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+  .res-btn.primary { }
+  .res-btn.secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
+
+  .scroll-box { max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
+  .scroll-box::-webkit-scrollbar { width: 4px; }
+  .scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+
+<script>
+// ========== DATA ==========
+const CATEGORIES = {
+  FACT_DRILL:    { name:"Fact Drill",          icon:"⚡", color:"#E8590C", timer:10,  desc:"Quick math facts — 10 seconds each!" },
+  INDIVIDUAL_1:  { name:"Individual Round 1",  icon:"🧩", color:"#2B6CB0", timer:60,  desc:"Logic, Geometry & Measurement — 60 seconds each" },
+  INDIVIDUAL_2:  { name:"Individual Round 2",  icon:"📊", color:"#2F855A", timer:60,  desc:"Decimals, Fractions & Percents — 60 seconds each" },
+  INDIVIDUAL_3:  { name:"Individual Round 3",  icon:"📈", color:"#6B46C1", timer:60,  desc:"Charts, Graphs & Statistics — 60 seconds each" },
+  TEAM:          { name:"Team Rounds",         icon:"🤝", color:"#B7791F", timer:60,  desc:"Collaborative problem solving — 60 seconds each" },
+  TIEBREAKER:    { name:"Tiebreaker",          icon:"🏆", color:"#C53030", timer:60,  desc:"Challenge problems — 60 seconds each" },
+  SELECTION:     { name:"Selection Test",      icon:"⭐", color:"#D69E2E", timer:60,  desc:"Team selection problems — 60 seconds each" },
+};
+
+const Q = [
+  // FACT DRILL
+  {c:"FACT_DRILL",q:"9 × 9 =",a:"81",t:"i"},{c:"FACT_DRILL",q:"36 ÷ 4 =",a:"9",t:"i"},{c:"FACT_DRILL",q:"43 + 17 =",a:"60",t:"i"},
+  {c:"FACT_DRILL",q:"9 + 3 × 8 =",a:"33",t:"i"},{c:"FACT_DRILL",q:"27 ÷ 9 × 6 =",a:"18",t:"i"},{c:"FACT_DRILL",q:"21 ÷ 3 × 8 =",a:"56",t:"i"},
+  {c:"FACT_DRILL",q:"62 − 5 × 3 =",a:"47",t:"i"},{c:"FACT_DRILL",q:"45 ÷ 5 − 4 =",a:"5",t:"i"},{c:"FACT_DRILL",q:"8 × 4 + 8 =",a:"40",t:"i"},
+  {c:"FACT_DRILL",q:"7 × 4 + 4 =",a:"32",t:"i"},{c:"FACT_DRILL",q:"16 ÷ 2 − 3 =",a:"5",t:"i"},{c:"FACT_DRILL",q:"75 ÷ 3 − 4 × 5 =",a:"5",t:"i"},
+  {c:"FACT_DRILL",q:"31 − 20 ÷ 5 × 7 =",a:"3",t:"i"},{c:"FACT_DRILL",q:"4 × (6 − 5) × 3 =",a:"12",t:"i"},{c:"FACT_DRILL",q:"3 × 6 + 3 × 9 =",a:"45",t:"i"},
+  {c:"FACT_DRILL",q:"5 + 7 + 48 ÷ 8 =",a:"18",t:"i"},{c:"FACT_DRILL",q:"7 × (19 − 17) + 6 =",a:"20",t:"i"},{c:"FACT_DRILL",q:"14 + 14 − 14 ÷ 7 =",a:"26",t:"i"},
+  {c:"FACT_DRILL",q:"24 − 21 ÷ 7 =",a:"21",t:"i"},{c:"FACT_DRILL",q:"5 + 15 ÷ 5 =",a:"8",t:"i"},{c:"FACT_DRILL",q:"80 ÷ 8 − 6 =",a:"4",t:"i"},
+  {c:"FACT_DRILL",q:"4 + 8 × 9 =",a:"76",t:"i"},{c:"FACT_DRILL",q:"22 + 6 × 4 =",a:"46",t:"i"},{c:"FACT_DRILL",q:"48 ÷ 8 + 3 =",a:"9",t:"i"},
+  {c:"FACT_DRILL",q:"20 ÷ 4 − 4 =",a:"1",t:"i"},{c:"FACT_DRILL",q:"24 ÷ 4 − 12 ÷ 4 =",a:"3",t:"i"},{c:"FACT_DRILL",q:"8 × 8 − 8 ÷ 8 =",a:"63",t:"i"},
+  {c:"FACT_DRILL",q:"5 × 5 − 5 × 2 =",a:"15",t:"i"},{c:"FACT_DRILL",q:"44 ÷ (22 − 11) × 3 =",a:"12",t:"i"},{c:"FACT_DRILL",q:"8 × 7 + 7 ÷ 7 =",a:"57",t:"i"},
+  {c:"FACT_DRILL",q:"72 ÷ 8 + 6 × (3 + 3) =",a:"45",t:"i"},{c:"FACT_DRILL",q:"4 × 11 + 15 ÷ 3 =",a:"49",t:"i"},{c:"FACT_DRILL",q:"19 + 3 × 12 ÷ 3 =",a:"31",t:"i"},
+  {c:"FACT_DRILL",q:"11 × 3 + 11 − 4 =",a:"40",t:"i"},{c:"FACT_DRILL",q:"5 × 6 − 4 × 3 + 10 =",a:"28",t:"i"},{c:"FACT_DRILL",q:"48 ÷ 8 × (40 ÷ 8) =",a:"30",t:"i"},
+  {c:"FACT_DRILL",q:"4 × (36 ÷ 6) + 12 =",a:"36",t:"i"},{c:"FACT_DRILL",q:"12 ÷ 4 × 20 ÷ 4 =",a:"15",t:"i"},{c:"FACT_DRILL",q:"13 + 2 × 16 ÷ 4 − 11 =",a:"10",t:"i"},
+  {c:"FACT_DRILL",q:"9 + 3 × 18 ÷ (27 ÷ 9) =",a:"27",t:"i"},{c:"FACT_DRILL",q:"9 + 12 − 12 × 9 ÷ 9 =",a:"9",t:"i"},{c:"FACT_DRILL",q:"3 × 10 + 3 − 4 × 7 =",a:"5",t:"i"},
+  {c:"FACT_DRILL",q:"(2 + 14 − 9) × (20 − 15) ÷ (18 − 13) =",a:"7",t:"i"},{c:"FACT_DRILL",q:"7 × 4 + 7 × 6 =",a:"70",t:"i"},
+  {c:"FACT_DRILL",q:"8 × 10 − 8 × 5 =",a:"40",t:"i"},{c:"FACT_DRILL",q:"8 × (54 ÷ 9) − 4 × 6 =",a:"24",t:"i"},
+  {c:"FACT_DRILL",q:"18 + 18 ÷ 9 + 21 =",a:"41",t:"i"},{c:"FACT_DRILL",q:"3 × 9 + 20 − 5 × 3 =",a:"32",t:"i"},
+  {c:"FACT_DRILL",q:"3 × 4 × 8 − 3 × 4 × 3 =",a:"60",t:"i"},{c:"FACT_DRILL",q:"26 + 4 × 5 + 18 =",a:"64",t:"i"},
+  {c:"FACT_DRILL",q:"5 × 4 + 64 − 2 × 7 =",a:"70",t:"i"},{c:"FACT_DRILL",q:"63 ÷ 9 + 11 − 9 =",a:"9",t:"i"},
+  {c:"FACT_DRILL",q:"8 + 12 ÷ 4 + 3 × 3 =",a:"20",t:"i"},
+  {c:"FACT_DRILL",q:"48 ÷ 8 + (10 − 8) × 4 =",a:"14",t:"i"},
+  {c:"FACT_DRILL",q:"36 ÷ 4 − 4 =",a:"5",t:"i"},{c:"FACT_DRILL",q:"9 × 7 − 8 =",a:"55",t:"i"},
+  {c:"FACT_DRILL",q:"39 ÷ (4 + 9) − 1 =",a:"2",t:"i"},{c:"FACT_DRILL",q:"2 × (36 ÷ 3) ÷ 4 =",a:"6",t:"i"},
+
+  // INDIVIDUAL 1
+  {c:"INDIVIDUAL_1",q:"Mr. Ahmed pulled two counting numbers from 1–200. Their difference is 6 and their product is 135. What is their sum?",a:"24",t:"i"},
+  {c:"INDIVIDUAL_1",q:"Shelia picks 3 berries from row 1, 5 from row 2, 7 from row 3 (pattern +2 each row). How many total berries after picking from row 7?",a:"63",t:"i"},
+  {c:"INDIVIDUAL_1",q:"Aaliyah walked: 60 yd north, 200 yd east, 25 yd south, 160 yd west, 5 yd south. How far from start (straight line)?",a:"50",t:"i"},
+  {c:"INDIVIDUAL_1",q:"Tyler saves 15% of $750 weekly lawn earnings. How much saved over 12 weeks?",a:"C",t:"m",o:["$112.50","$135.00","$1,350.00","$1,125.00"],l:["A","B","C","D"]},
+  {c:"INDIVIDUAL_1",q:"A bed is rectangular. Twice the width = 3 times the length. Width is 18 inches more than length. Find the perimeter (inches).",a:"180",t:"i"},
+  {c:"INDIVIDUAL_1",q:"A family of 9 spent $149 on baseball tickets. Adults = $21, Students = $13. How many adults?",a:"4",t:"i"},
+  {c:"INDIVIDUAL_1",q:"A package of index cards is 0.375 inch thick. How many WHOLE packages to make 27 cm? (1 inch = 2.54 cm)",a:"28",t:"i"},
+  {c:"INDIVIDUAL_1",q:"In rectangle ABEF: AF = 16 cm, AB = 4 cm, BC = 2 cm. Find total area of shaded regions (sq cm).",a:"32",t:"i"},
+
+  // INDIVIDUAL 2
+  {c:"INDIVIDUAL_2",q:"Darian added 9 whole numbers and their sum was even. At most, how many could be odd?",a:"D",t:"m",o:["1","5","7","8"],l:["A","B","C","D"]},
+  {c:"INDIVIDUAL_2",q:"A water bottle is 5/6 full with room for 8 mL more. How much does it hold when full?",a:"B",t:"m",o:["40 mL","48 mL","56 mL","88 mL"],l:["A","B","C","D"]},
+  {c:"INDIVIDUAL_2",q:"A pizzeria bakes 8 pizzas per half hour for 6 hours. Mr. Peschi bought 2 dozen. What % did he buy?",a:"25",t:"i"},
+  {c:"INDIVIDUAL_2",q:"Alivia has 150 coins: 40% quarters, 10% dimes, rest nickels. Total value? (dollars, like 20.25)",a:"20.25",t:"i"},
+  {c:"INDIVIDUAL_2",q:"Library starts with 2025 books. Each month adds 1/5, 2/5, 3/5, 4/5, then 5/5 of 2025. Total after 5 months?",a:"8100",t:"i"},
+  {c:"INDIVIDUAL_2",q:"Sara colors 20% of a grid. Then Sam colors 25% of remaining. What % total colored?",a:"40",t:"i"},
+  {c:"INDIVIDUAL_2",q:"Jaymin's garden is 42 ft × 4 ft. He divides it into 14 sections of 3 ft × 4 ft with parallel fences. How many feet of additional fencing?",a:"52",t:"i"},
+
+  // INDIVIDUAL 3
+  {c:"INDIVIDUAL_3",q:"Jabo rolls a 20-sided die (1–20). Probability of a number with at least one odd digit? Write as a fraction.",a:"3/4",t:"i"},
+  {c:"INDIVIDUAL_3",q:"Lamont picks from 40 marbles (1–40). Probability of an odd multiple of 3?",a:"C",t:"m",o:["2.5%","7.5%","17.5%","25%"],l:["A","B","C","D"]},
+  {c:"INDIVIDUAL_3",q:"Ivy removes all prime-numbered marbles greater than 20 from a bag of 1–40. What is their mean?",a:"30",t:"i"},
+  {c:"INDIVIDUAL_3",q:"MN Wild goals over 10 seasons: 248, 239, M, L, 218, 210, 250, 263, 213, 227. Average = 235. L < all others, M > all others. Smallest possible M?",a:"273",t:"i"},
+  {c:"INDIVIDUAL_3",q:"2020 season had 69 games. Which season had most goals per game? 2016: 213/82, 2017: 263/82, 2018: 250/82, 2019: 210/82, 2020: 218/69",a:"B",t:"m",o:["2016","2017","2018","2019","2020"],l:["A","B","C","D","E"]},
+
+  // TEAM
+  {c:"TEAM",q:"A right trapezoid has parallel sides 6 and 9, and a slant side of 5. Area = 30 sq units. What is the height?",a:"4",t:"i"},
+  {c:"TEAM",q:"Pyramid pattern: Row 1 = 1, Row 2 = 3, 5, Row 3 = 7, 9, 11, Row 4 = 13, 15, 17, 19... In what row will 51 appear?",a:"7",t:"i"},
+  {c:"TEAM",q:"Omar × 5 + 8 = father's age. Father = 53. How old is Omar?",a:"9",t:"i"},
+  {c:"TEAM",q:"A train travels 30 m/s. How many km does it travel in one hour?",a:"108",t:"i"},
+  {c:"TEAM",q:"Alana: 5 notebooks + 4 folders = $4.25. Amira: 4 notebooks + 5 folders = $4.75. How much for 6 notebooks + 6 folders?",a:"6.00",t:"i"},
+  {c:"TEAM",q:"Dan: 39 bolts + 23 screws. Buys 6 bolts & 8 screws weekly. When equal, how many total?",a:"174",t:"i"},
+  {c:"TEAM",q:"12 chocolates in a box. Box + chocs = 80g. Box alone = 1/4 of that. Weight of 2/3 of chocolates? (grams)",a:"40",t:"i"},
+  {c:"TEAM",q:"Jerzek mows lawns 4 Saturdays, paid 25% more each week. Week 2 = $80, Week 3 = $100. Total for all 4?",a:"369",t:"i"},
+  {c:"TEAM",q:"4 apples + 6 bananas = $12. 6 apples + 4 bananas = $18. How much for 7 apples + 7 bananas?",a:"A",t:"m",o:["$21","$24","$28","$30"],l:["A","B","C","D"]},
+  {c:"TEAM",q:"Cupcake every 20 sec, doughnut every 24 sec. Both made at 9:15 AM. When next produced together?",a:"A",t:"m",o:["9:17 AM","9:18 AM","9:20 AM","9:23 AM"],l:["A","B","C","D"]},
+  {c:"TEAM",q:"Narmu earns $12/driveway, $13/sidewalk. Shoveled 23 driveways. Needs $470 + 5% tax. Min sidewalks needed?",a:"17",t:"i"},
+  {c:"TEAM",q:"Liam has 5.8 m ribbon. Cuts 7 pieces of 0.8 m each. How much left? (decimal to tenths)",a:"0.2",t:"i"},
+  {c:"TEAM",q:"Year 2025 is a Harshad number (divisible by sum of its digits: 2+0+2+5 = 9). What is the next Harshad year?",a:"2028",t:"i"},
+  {c:"TEAM",q:"Imelda buys shoes at $126 + 5% tax. Michael buys same shoes at 20% off + 5% tax. How much more did Imelda pay?",a:"26.46",t:"i"},
+  {c:"TEAM",q:"How many faces does a triangular prism with a hole through the center have?",a:"8",t:"i"},
+  {c:"TEAM",q:"Sammy drove: 2.5 hrs at 55 mph, 2 hrs at 65 mph, 1.25 hrs at 60 mph. % of time at or above 60 mph?",a:"D",t:"m",o:["57.8%","34.8%","35.7%","56.5%"],l:["A","B","C","D"]},
+  {c:"TEAM",q:"AAB × B = CB7B. A, B, C are different digits. What is A × B × C?",a:"48",t:"i"},
+
+  // TIEBREAKER
+  {c:"TIEBREAKER",q:"Compass points NW. Turn 2025° clockwise. New direction?",a:"C",t:"m",o:["North","East","South","West"],l:["A","B","C","D"]},
+  {c:"TIEBREAKER",q:"Jillian adds 1/2 tbsp + 2/5 tbsp of salt. What % of a whole tablespoon?",a:"90",t:"i"},
+  {c:"TIEBREAKER",q:"First 11 primes. How much larger is the range than the median?",a:"16",t:"i"},
+  {c:"TIEBREAKER",q:"Squares drawn side-by-side, sides increase by 1 cm. 20 squares total. Perimeter of entire figure?",a:"B",t:"m",o:["440 cm","460 cm","670 cm","840 cm"],l:["A","B","C","D"]},
+  {c:"TIEBREAKER",q:"Spinner has 15, 2, 4, 6, 7. Which number added makes odd more likely than prime?",a:"C",t:"m",o:["3","5","9","11"],l:["A","B","C","D"]},
+  {c:"TIEBREAKER",q:"Two identical 6-sided dice, opposite sides sum to 11. Probability sum of top faces < 15? (simplest fraction)",a:"11/12",t:"i"},
+
+  // SELECTION
+  {c:"SELECTION",q:"Alarm flashes every 4 min, nightlight every 6 min. Both flash at 2:00 AM. How many times together from 2:00–2:59?",a:"5",t:"i"},
+  {c:"SELECTION",q:"Hamza sold 56 candy bars for $42. Price per bar? (like 0.75)",a:"0.75",t:"i"},
+  {c:"SELECTION",q:"Perimeter of a rhombus = 40.4 cm. Best estimate for one side in inches?",a:"B",t:"m",o:["3 in","4 in","24 in","240 in"],l:["A","B","C","D"]},
+  {c:"SELECTION",q:"Families use 1024 gal Day 1, then 3/4 each day after. Gallons on Day 5?",a:"324",t:"i"},
+  {c:"SELECTION",q:"Year 2024: ones digit = product of thousands & tens digits (2 × 2 = 4). Next year this happens?",a:"2036",t:"i"},
+  {c:"SELECTION",q:"List: 19, 25, 8, P, 12, Q, 11, 27, 9, R. Mean = 15, median of P, Q, R = 14. Mean of P, Q, R?",a:"13",t:"i"},
+  {c:"SELECTION",q:"Same list as above. What is the largest possible value for R? (all values < 30)",a:"E",t:"m",o:["1","10","14","20","24"],l:["A","B","C","D","E"]},
+  {c:"SELECTION",q:"24-sided die (1–24). Probability of rolling a multiple of both 4 AND 6? (simplest fraction)",a:"1/12",t:"i"},
+  {c:"SELECTION",q:"MN consumes 66 trillion kWh/year. 22% from wind. Approx kWh per day from wind?",a:"D",t:"m",o:["1,452","39,780,820","14,520,000,000","39,780,820,000"],l:["A","B","C","D"]},
+  {c:"SELECTION",q:"Olympic medals: USA 126, China 91, England 65, France 64, Australia 53, Japan 45, Italy 40, Netherlands 34, Germany 33, S.Korea 32. France bar = 16mm. Japan bar height? (mm)",a:"11.25",t:"i"},
+  {c:"SELECTION",q:"Same medal data. What % of countries have a count below the mean?",a:"60",t:"i"},
+];
+
+// ========== STATE ==========
+let state = { screen:"home", cat:null, qs:[], idx:0, ans:"", done:false, ok:null, score:0, total:0, time:0, timedOut:false, results:[], timer:null };
+
+function shuffle(a) { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function norm(s) { return String(s).trim().toLowerCase().replace(/[\$%,\s]/g,""); }
+
+function startCat(key) {
+  clearInterval(state.timer);
+  const qs = shuffle(Q.filter(q => q.c === key));
+  const cat = CATEGORIES[key];
+  state = { screen:"quiz", cat:key, qs, idx:0, ans:"", done:false, ok:null, score:0, total:qs.length, time:cat.timer, timedOut:false, results:[], timer:null };
+  startTimer();
+  render();
+}
+
+function startRandom() {
+  clearInterval(state.timer);
+  const qs = shuffle(Q).slice(0, 20);
+  state = { screen:"quiz", cat:qs[0].c, qs, idx:0, ans:"", done:false, ok:null, score:0, total:20, time:30, timedOut:false, results:[], timer:null };
+  startTimer();
+  render();
+}
+
+function startTimer() {
+  clearInterval(state.timer);
+  const q = state.qs[state.idx];
+  if (q.t === "m") return; // no timer for multiple choice
+  state.timer = setInterval(() => {
+    state.time--;
+    if (state.time <= 0) {
+      clearInterval(state.timer);
+      state.timedOut = true;
+      state.done = true;
+      state.ok = false;
+      state.results.push({ q: q.q, yours: "Time's up!", correct: q.a, ok: false });
+      render();
+    } else {
+      renderTimer();
+    }
+  }, 1000);
+}
+
+function check(userAns) {
+  if (state.done) return;
+  clearInterval(state.timer);
+  const q = state.qs[state.idx];
+  const isOk = norm(userAns) === norm(q.a);
+  state.done = true;
+  state.ok = isOk;
+  state.ans = userAns;
+  if (isOk) state.score++;
+  state.results.push({ q: q.q, yours: userAns, correct: q.a, ok: isOk });
+  render();
+}
+
+function next() {
+  if (state.idx + 1 >= state.qs.length) { state.screen = "results"; render(); return; }
+  state.idx++;
+  state.done = false;
+  state.ok = null;
+  state.ans = "";
+  state.timedOut = false;
+  const q = state.qs[state.idx];
+  state.cat = q.c;
+  const cat = CATEGORIES[q.c];
+  state.time = cat.timer;
+  startTimer();
+  render();
+}
+
+// ========== RENDER ==========
+function render() {
+  const app = document.getElementById("app");
+  if (state.screen === "home") app.innerHTML = renderHome();
+  else if (state.screen === "quiz") app.innerHTML = renderQuiz();
+  else app.innerHTML = renderResults();
+  bindEvents();
+}
+
+function renderHome() {
+  let cats = "";
+  for (const [k, c] of Object.entries(CATEGORIES)) {
+    const n = Q.filter(q => q.c === k).length;
+    cats += `<button class="cat-btn" data-cat="${k}">
+      <div class="cat-icon" style="background:${c.color}22">${c.icon}</div>
+      <div style="flex:1"><div class="cat-name">${c.name}</div><div class="cat-desc">${c.desc}</div></div>
+      <div class="cat-count" style="color:${c.color}">${n}Q</div>
+    </button>`;
+  }
+  return `<div style="text-align:center;margin-bottom:32px" class="fade-in">
+    <div class="home-icon">🧮</div>
+    <h1 class="home-title">Math Masters</h1>
+    <p class="home-sub">Grade 5 Practice Arena</p>
+    <div class="home-rule"></div>
+  </div>
+  <div class="slide-up">${cats}</div>
+  <button class="random-btn" id="randomBtn">🎲 Random Mix (20 Questions)</button>`;
+}
+
+function renderQuiz() {
+  const q = state.qs[state.idx];
+  const cat = CATEGORIES[state.cat];
+  const isChoice = q.t === "m";
+  const isFact = q.c === "FACT_DRILL";
+
+  // Progress dots
+  let dots = "";
+  for (let i = 0; i < state.qs.length; i++) {
+    let bg = "rgba(255,255,255,0.08)";
+    if (i < state.idx) bg = state.results[i]?.ok ? "#48bb78" : "#fc8181";
+    else if (i === state.idx) bg = cat.color;
+    dots += `<div class="progress-dot" style="background:${bg}"></div>`;
+  }
+
+  // Timer
+  let timerHtml = "";
+  if (!isChoice && !state.done) {
+    const pct = (state.time / cat.timer) * 100;
+    const urgent = state.time <= 3;
+    timerHtml = `<div class="timer-row">
+      <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:${pct}%;background:${urgent?"#ef4444":cat.color};${urgent?"box-shadow:0 0 12px #ef4444":""}"></div></div>
+      <div class="timer-num" id="timerNum" style="color:${urgent?"#ef4444":"#a0aec0"};${urgent?"animation:pulse 0.5s infinite alternate":""}">${state.time}</div>
+    </div>`;
+  }
+
+  // Answer area
+  let ansHtml = "";
+  if (isChoice) {
+    let opts = "";
+    for (let i = 0; i < q.o.length; i++) {
+      const label = q.l[i];
+      const isCorrectOpt = state.done && label === q.a;
+      const isSelected = state.done && state.ans === label;
+      let cls = "choice-btn";
+      if (state.done) { cls += " answered"; if (isCorrectOpt) cls += " correct-opt"; if (isSelected && !state.ok) cls += " wrong-sel"; }
+      const bgC = isCorrectOpt && state.done ? "#48bb78" : cat.color + "33";
+      const fgC = isCorrectOpt && state.done ? "#fff" : cat.color;
+      let mark = "";
+      if (state.done && isCorrectOpt) mark = `<span class="choice-mark">✓</span>`;
+      if (state.done && isSelected && !state.ok) mark = `<span class="choice-mark" style="color:#fc8181">✗</span>`;
+      opts += `<button class="${cls}" data-choice="${label}" style="--cat-color:${cat.color}">
+        <div class="choice-letter" style="background:${bgC};color:${fgC}">${label}</div>
+        <span class="choice-text">${q.o[i]}</span>${mark}
+      </button>`;
+    }
+    ansHtml = opts;
+  } else {
+    const inputCls = state.done ? (state.ok ? "ans-input right" : "ans-input wrong") : "ans-input";
+    ansHtml = `<div class="input-row">
+      <input class="${inputCls}" id="ansInput" type="text" value="${state.ans}" placeholder="${isFact ? "Type answer..." : "Your answer..."}" style="font-size:${isFact ? 24 : 18}px" ${state.done ? "disabled" : ""} autocomplete="off">
+      ${state.done ? "" : `<button class="go-btn" id="goBtn" style="background:${cat.color}" ${state.ans.trim() ? "" : "disabled"}>Go</button>`}
+    </div>`;
+    if (state.done) {
+      const fbCls = state.ok ? "feedback ok" : "feedback bad";
+      const emoji = state.ok ? "✅" : state.timedOut ? "⏰" : "❌";
+      const title = state.ok ? "Correct!" : state.timedOut ? "Time's up!" : "Not quite!";
+      ansHtml += `<div class="${fbCls}"><span class="fb-emoji">${emoji}</span><div>
+        <div class="fb-title" style="color:${state.ok?"#48bb78":"#fc8181"}">${title}</div>
+        ${state.ok ? "" : `<div class="fb-ans">Answer: <strong style="color:#48bb78">${q.a}</strong></div>`}
+      </div></div>`;
+    }
+  }
+
+  // Next button
+  let nextBtn = "";
+  if (state.done) {
+    const label = state.idx + 1 >= state.qs.length ? "See Results →" : "Next Question →";
+    nextBtn = `<button class="next-btn" id="nextBtn">${label}</button>`;
+  }
+
+  return `<div class="fade-in">
+    <div class="quiz-header">
+      <button class="exit-btn" id="exitBtn">← Exit</button>
+      <div class="progress-label">${cat.icon} ${state.idx+1} / ${state.qs.length}</div>
+      <div class="score-badge">${state.score} ✓</div>
+    </div>
+    <div class="progress-bar">${dots}</div>
+    ${timerHtml}
+    <div class="q-card">
+      <div class="q-accent" style="background:${cat.color}"></div>
+      <div class="q-label">${cat.name}</div>
+      <div class="q-text" style="font-size:${isFact ? 28 : 18}px">${q.q}</div>
+    </div>
+    ${ansHtml}
+    ${nextBtn}
+  </div>`;
+}
+
+function renderTimer() {
+  const cat = CATEGORIES[state.cat];
+  const fill = document.getElementById("timerFill");
+  const num = document.getElementById("timerNum");
+  if (!fill || !num) return;
+  const pct = (state.time / cat.timer) * 100;
+  const urgent = state.time <= 3;
+  fill.style.width = pct + "%";
+  fill.style.background = urgent ? "#ef4444" : cat.color;
+  fill.style.boxShadow = urgent ? "0 0 12px #ef4444" : "none";
+  num.textContent = state.time;
+  num.style.color = urgent ? "#ef4444" : "#a0aec0";
+  num.style.animation = urgent ? "pulse 0.5s infinite alternate" : "none";
+}
+
+function renderResults() {
+  const pct = Math.round((state.score / state.total) * 100);
+  const emoji = pct >= 90 ? "🏆" : pct >= 70 ? "🌟" : pct >= 50 ? "💪" : "📚";
+  const cat = CATEGORIES[state.cat];
+
+  let items = "";
+  for (const r of state.results) {
+    const cls = r.ok ? "rev-item ok" : "rev-item bad";
+    items += `<div class="${cls}">
+      <div class="rev-q">${r.q}</div>
+      <div class="rev-row">
+        <span style="color:${r.ok?"#48bb78":"#fc8181"}">Your answer: <strong>${r.yours}</strong></span>
+        ${r.ok ? "" : `<span style="color:#48bb78">Correct: <strong>${r.correct}</strong></span>`}
+      </div>
+    </div>`;
+  }
+
+  return `<div class="fade-in" style="text-align:center">
+    <div class="res-emoji">${emoji}</div>
+    <h2 class="res-title">Round Complete!</h2>
+    <div class="res-stats">
+      <div><div class="stat-num" style="color:#48bb78">${state.score}</div><div class="stat-lbl">Correct</div></div>
+      <div><div class="stat-num" style="color:#fc8181">${state.total - state.score}</div><div class="stat-lbl">Missed</div></div>
+      <div><div class="stat-num" style="color:#D69E2E">${pct}%</div><div class="stat-lbl">Score</div></div>
+    </div>
+  </div>
+  <div class="scroll-box">${items}</div>
+  <div class="res-btns">
+    <button class="res-btn primary" id="retryBtn" style="background:${cat?.color||"#E8590C"}">Try Again</button>
+    <button class="res-btn secondary" id="homeBtn">Back to Menu</button>
+  </div>`;
+}
+
+// ========== EVENTS ==========
+function bindEvents() {
+  // Home
+  document.querySelectorAll("[data-cat]").forEach(btn => {
+    btn.addEventListener("click", () => startCat(btn.dataset.cat));
+  });
+  const rb = document.getElementById("randomBtn");
+  if (rb) rb.addEventListener("click", startRandom);
+
+  // Quiz
+  const eb = document.getElementById("exitBtn");
+  if (eb) eb.addEventListener("click", () => { clearInterval(state.timer); state.screen = "home"; render(); });
+
+  document.querySelectorAll("[data-choice]").forEach(btn => {
+    btn.addEventListener("click", () => check(btn.dataset.choice));
+  });
+
+  const inp = document.getElementById("ansInput");
+  if (inp && !state.done) {
+    inp.focus();
+    inp.addEventListener("input", e => { state.ans = e.target.value; const gb = document.getElementById("goBtn"); if (gb) gb.disabled = !e.target.value.trim(); });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter" && state.ans.trim()) check(state.ans); });
+  }
+  const gb = document.getElementById("goBtn");
+  if (gb) gb.addEventListener("click", () => { if (state.ans.trim()) check(state.ans); });
+
+  const nb = document.getElementById("nextBtn");
+  if (nb) nb.addEventListener("click", next);
+
+  // Results
+  const retry = document.getElementById("retryBtn");
+  if (retry) retry.addEventListener("click", () => startCat(state.cat));
+  const home = document.getElementById("homeBtn");
+  if (home) home.addEventListener("click", () => { state.screen = "home"; render(); });
+}
+
+// BOOT
+render();
+</script>
+</body>
+</html>
