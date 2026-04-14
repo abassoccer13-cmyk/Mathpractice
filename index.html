@@ -107,13 +107,13 @@ var gpgTbl=TBL(['Season','2016','2017','2018','2019','2020'],[['Games','82','82'
 var medalTbl=TBL(['USA','CHN','ENG','FRA','AUS','JPN','ITA','NED','GER','KOR'],[['126','91','65','64','53','45','40','34','33','32']]);
 
 var CATEGORIES={
-  FACT_DRILL:{name:"Fact Drill",icon:"\u26A1",color:"#E8590C",timer:10,desc:"Quick math facts \u2014 10 seconds each!"},
-  INDIVIDUAL_1:{name:"Individual Round 1",icon:"\uD83E\uDDE9",color:"#2B6CB0",timer:60,desc:"Logic, Geometry & Measurement \u2014 60 sec"},
-  INDIVIDUAL_2:{name:"Individual Round 2",icon:"\uD83D\uDCCA",color:"#2F855A",timer:60,desc:"Decimals, Fractions & Percents \u2014 60 sec"},
-  INDIVIDUAL_3:{name:"Individual Round 3",icon:"\uD83D\uDCC8",color:"#6B46C1",timer:60,desc:"Charts, Graphs & Statistics \u2014 60 sec"},
-  TEAM:{name:"Team Rounds",icon:"\uD83E\uDD1D",color:"#B7791F",timer:60,desc:"Collaborative problem solving \u2014 60 sec"},
-  TIEBREAKER:{name:"Tiebreaker",icon:"\uD83C\uDFC6",color:"#C53030",timer:60,desc:"Challenge problems \u2014 60 sec"},
-  SELECTION:{name:"Selection Test",icon:"\u2B50",color:"#D69E2E",timer:60,desc:"Team selection problems \u2014 60 sec"}
+  FACT_DRILL:{name:"Fact Drill",icon:"\u26A1",color:"#E8590C",timer:0,desc:"Quick math facts \u2014 no timer, go at your own pace!"},
+  INDIVIDUAL_1:{name:"Individual Round 1",icon:"\uD83E\uDDE9",color:"#2B6CB0",timer:120,desc:"Logic, Geometry & Measurement \u2014 2 minutes each"},
+  INDIVIDUAL_2:{name:"Individual Round 2",icon:"\uD83D\uDCCA",color:"#2F855A",timer:120,desc:"Decimals, Fractions & Percents \u2014 2 minutes each"},
+  INDIVIDUAL_3:{name:"Individual Round 3",icon:"\uD83D\uDCC8",color:"#6B46C1",timer:120,desc:"Charts, Graphs & Statistics \u2014 2 minutes each"},
+  TEAM:{name:"Team Rounds",icon:"\uD83E\uDD1D",color:"#B7791F",timer:120,desc:"Collaborative problem solving \u2014 2 minutes each"},
+  TIEBREAKER:{name:"Tiebreaker",icon:"\uD83C\uDFC6",color:"#C53030",timer:120,desc:"Challenge problems \u2014 2 minutes each"},
+  SELECTION:{name:"Selection Test",icon:"\u2B50",color:"#D69E2E",timer:120,desc:"Team selection problems \u2014 2 minutes each"}
 };
 
 var Q=[
@@ -213,8 +213,8 @@ var st={screen:"home",cat:null,qs:[],idx:0,ans:"",done:false,ok:null,score:0,tot
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp;}return a;}
 function norm(s){return String(s).trim().toLowerCase().replace(/[\$%,\s]/g,"");}
 function startCat(k){clearInterval(st.tmr);var qs=shuffle(Q.filter(function(q){return q.c===k;}));var c=CATEGORIES[k];st={screen:"quiz",cat:k,qs:qs,idx:0,ans:"",done:false,ok:null,score:0,total:qs.length,time:c.timer,to:false,res:[],tmr:null};startT();render();}
-function startRandom(){clearInterval(st.tmr);var qs=shuffle(Q).slice(0,20);st={screen:"quiz",cat:qs[0].c,qs:qs,idx:0,ans:"",done:false,ok:null,score:0,total:20,time:30,to:false,res:[],tmr:null};startT();render();}
-function startT(){clearInterval(st.tmr);if(st.qs[st.idx].t==="m")return;st.tmr=setInterval(function(){st.time--;if(st.time<=0){clearInterval(st.tmr);st.to=true;st.done=true;st.ok=false;st.res.push({q:st.qs[st.idx].q,y:"Time\u2019s up!",c:st.qs[st.idx].a,ok:false});render();}else{updT();}},1000);}
+function startRandom(){clearInterval(st.tmr);var qs=shuffle(Q).slice(0,20);var t=CATEGORIES[qs[0].c].timer;st={screen:"quiz",cat:qs[0].c,qs:qs,idx:0,ans:"",done:false,ok:null,score:0,total:20,time:t,to:false,res:[],tmr:null};startT();render();}
+function startT(){clearInterval(st.tmr);if(st.qs[st.idx].t==="m"||!CATEGORIES[st.cat].timer)return;st.tmr=setInterval(function(){st.time--;if(st.time<=0){clearInterval(st.tmr);st.to=true;st.done=true;st.ok=false;st.res.push({q:st.qs[st.idx].q,y:"Time\u2019s up!",c:st.qs[st.idx].a,ok:false});render();}else{updT();}},1000);}
 function chk(u){if(st.done)return;clearInterval(st.tmr);var q=st.qs[st.idx];var ok=norm(u)===norm(q.a);st.done=true;st.ok=ok;st.ans=u;if(ok)st.score++;st.res.push({q:q.q,y:u,c:q.a,ok:ok});render();}
 function nxt(){if(st.idx+1>=st.qs.length){st.screen="results";render();return;}st.idx++;st.done=false;st.ok=null;st.ans="";st.to=false;var q=st.qs[st.idx];st.cat=q.c;st.time=CATEGORIES[q.c].timer;startT();render();}
 function updT(){var c=CATEGORIES[st.cat];var f=document.getElementById("tf");var n=document.getElementById("tn");if(!f||!n)return;var p=(st.time/c.timer)*100;var u=st.time<=3;f.style.width=p+"%";f.style.background=u?"#ef4444":c.color;f.style.boxShadow=u?"0 0 12px #ef4444":"none";n.textContent=st.time;n.style.color=u?"#ef4444":"#a0aec0";n.style.animation=u?"pulse .5s infinite alternate":"none";}
@@ -226,7 +226,7 @@ return '<div style="text-align:center;margin-bottom:32px" class="fade-in"><div c
 
 function rQuiz(){var q=st.qs[st.idx];var c=CATEGORIES[st.cat];var isM=q.t==="m";var isF=q.c==="FACT_DRILL";
 var dots="";for(var i=0;i<st.qs.length;i++){var bg="rgba(255,255,255,.08)";if(i<st.idx)bg=st.res[i]&&st.res[i].ok?"#48bb78":"#fc8181";else if(i===st.idx)bg=c.color;dots+='<div class="progress-dot" style="background:'+bg+'"></div>';}
-var tmr="";if(!isM&&!st.done){var p=(st.time/c.timer)*100;var u=st.time<=3;tmr='<div class="timer-row"><div class="timer-track"><div class="timer-fill" id="tf" style="width:'+p+'%;background:'+(u?"#ef4444":c.color)+'"></div></div><div class="timer-num" id="tn" style="color:'+(u?"#ef4444":"#a0aec0")+'">'+ st.time+'</div></div>';}
+var tmr="";if(!isM&&!st.done&&c.timer){var p=(st.time/c.timer)*100;var u=st.time<=3;tmr='<div class="timer-row"><div class="timer-track"><div class="timer-fill" id="tf" style="width:'+p+'%;background:'+(u?"#ef4444":c.color)+'"></div></div><div class="timer-num" id="tn" style="color:'+(u?"#ef4444":"#a0aec0")+'">'+ st.time+'</div></div>';}
 var vis="";if(q.v)vis='<div class="q-vis">'+q.v+'</div>';if(q.h)vis+='<div style="overflow-x:auto;margin:12px 0">'+q.h+'</div>';
 var ans="";
 if(isM){for(var i=0;i<q.o.length;i++){var lb=q.l[i];var co=st.done&&lb===q.a;var sl=st.done&&st.ans===lb;var cl="choice-btn";if(st.done){cl+=" done";if(co)cl+=" cok";if(sl&&!st.ok)cl+=" cbad";}var bg2=co&&st.done?"#48bb78":c.color+"33";var fg=co&&st.done?"#fff":c.color;var mk="";if(st.done&&co)mk='<span class="choice-mark">\u2713</span>';if(st.done&&sl&&!st.ok)mk='<span class="choice-mark" style="color:#fc8181">\u2717</span>';ans+='<button class="'+cl+'" data-ch="'+lb+'" style="--cc:'+c.color+'"><div class="choice-letter" style="background:'+bg2+';color:'+fg+'">'+lb+'</div><span class="choice-text">'+q.o[i]+'</span>'+mk+'</button>';}}
